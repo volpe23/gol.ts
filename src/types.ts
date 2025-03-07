@@ -1,12 +1,16 @@
-export type State = 'dead' | 'alive';
-export type Board = State[][];
-export type StateObj = {
-	state: State;
-	value: number;
+export type Cell = number;
+export type State = string;
+export type Board = Cell[][];
+
+export type GoL = Union<['dead', 'alive']>;
+export type StateObj<T extends string> = {
+	state: T;
+	value: Cell;
 	rules: {
-		[key in State]?: number[];
+		[key in T]?: number[];
 	};
 	color: string;
+	default: number;
 };
 type RequireAtLeastOne<T extends string> = {
 	[K in T]?: number[];
@@ -27,10 +31,12 @@ const gol: ObjectFromUnion<GoL> = {
 
 // export type GoL = 'dead' | 'alive';
 
-type Automaton = NexState[];
+export type Automaton = {
+	states: StateObj<string>[];
+	createNextBoard: (b: Board) => Board;
+};
 type NexState = {};
 
-type Union<T extends any[]> = T[number];
-type GoL = Union<['dead', 'alive']>;
+export type Union<T extends any[]> = T[number];
 
 type T0 = Union<[1, 2, 3]>;
