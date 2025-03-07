@@ -2,15 +2,16 @@ export type State = 'dead' | 'alive';
 export type Board = State[][];
 export type StateObj = {
 	state: State;
+	value: number;
 	rules: {
-		[key in State]?: number[]
-	},
+		[key in State]?: number[];
+	};
 	color: string;
 };
 type RequireAtLeastOne<T extends string> = {
-  [K in T]?: number[];
+	[K in T]?: number[];
 } & {
-  [K in T as K extends keyof T ? never : K]: never;
+	[K in T as K extends keyof T ? never : K]: never;
 };
 
 type S1<T extends GoL> = {

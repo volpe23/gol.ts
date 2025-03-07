@@ -21,6 +21,7 @@ const ALIVE_COLOR = '#ee0505';
 
 const DEAD: StateObj = {
 	state: 'dead',
+	value: 0,
 	rules: {
 		// alive: [2, 3],
 		// dead: []
@@ -30,6 +31,8 @@ const DEAD: StateObj = {
 
 const ALIVE: StateObj = {
 	state: 'alive',
+	value: 1,
+	rules: {},
 	color: ALIVE_COLOR,
 } as const;
 
@@ -53,10 +56,18 @@ canvas.height = HEIGHT;
 canvas.addEventListener('click', (e) => {
 	const c = Math.floor(e.offsetX / SQUARE_WIDTH);
 	const r = Math.floor(e.offsetY / SQUARE_HEIGHT);
-	cells[r][c] = 'alive';
+	cells[r][c] = toggleCellState(cells[r][c]);
 
 	render(ctx, cells);
 	// colorRect(ctx, x, y, ALIVE_COLOR);
+});
+
+function toggleCellState(cell: State): State {
+	return cell === 'alive' ? 'dead' : 'alive';
+}
+
+canvas.addEventListener('contextmenu', (e) => {
+	e.preventDefault();
 });
 
 nextButton.addEventListener('click', () => {
