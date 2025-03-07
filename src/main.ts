@@ -1,9 +1,13 @@
 import './style.css';
 import { Board, State, StateObj } from './types';
 
-const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+const canvas = document.getElementById(
+	'gameCanvas'
+) as HTMLCanvasElement | null;
 if (!canvas) throw new Error('canvas not found');
-const nextButton = document.getElementById('next-state') as HTMLButtonElement;
+const nextButton = document.getElementById(
+	'next-state'
+) as HTMLButtonElement | null;
 if (!nextButton) throw new Error('could not get next button');
 
 const WIDTH = 600;
@@ -17,6 +21,10 @@ const ALIVE_COLOR = '#ee0505';
 
 const DEAD: StateObj = {
 	state: 'dead',
+	rules: {
+		// alive: [2, 3],
+		// dead: []
+	},
 	color: DEFAULT_COLOR,
 } as const;
 
@@ -47,8 +55,6 @@ canvas.addEventListener('click', (e) => {
 	const r = Math.floor(e.offsetY / SQUARE_HEIGHT);
 	cells[r][c] = 'alive';
 
-	// const x = c * SQUARE_WIDTH;
-	// const y = r * SQUARE_HEIGHT;
 	render(ctx, cells);
 	// colorRect(ctx, x, y, ALIVE_COLOR);
 });
