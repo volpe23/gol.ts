@@ -5,8 +5,8 @@
 }
 canvas {
 	cursor: default;
-	width: 600px;
-	height: 600px;
+	width: 800px;
+	height: 800px;
 	background-color: #101010;
 	margin: auto;
 }
@@ -16,4 +16,8 @@ canvas {
 	min-height: 100vh;
 	min-width: 100vw;
 	background-color: #050505;
+}
+
+.radio-label {
+	color: white;
 }

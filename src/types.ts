@@ -3,6 +3,7 @@ export type State = string;
 export type Board = Cell[][];
 
 export type GoL = Union<['dead', 'alive']>;
+export type BB = Union<['dead', 'alive', 'dying']>;
 export type StateObj<T extends string> = {
 	state: T;
 	value: Cell;
@@ -32,6 +33,7 @@ const gol: ObjectFromUnion<GoL> = {
 // export type GoL = 'dead' | 'alive';
 
 export type Automaton = {
+	name: string;
 	states: StateObj<string>[];
 	createNextBoard: (b: Board) => Board;
 };
