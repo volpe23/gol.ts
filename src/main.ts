@@ -9,6 +9,8 @@ const SQUARE_WIDTH = WIDTH / COLS;
 const SQUARE_HEIGHT = HEIGHT / ROWS;
 const DEFAULT_COLOR = '#101010';
 const ALIVE_COLOR = '#ee0505';
+const intervalTimeout = 100;
+let interval: number | undefined;
 
 const canvas = document.getElementById(
 	'gameCanvas'
@@ -37,6 +39,26 @@ if (!automataPanel) throw new Error('could not get automata panel');
 
 canvas.addEventListener('contextmenu', (e) => {
 	e.preventDefault();
+});
+
+startBtn.addEventListener('click', (e) => {
+	const btn = e.target as HTMLButtonElement;
+	if (!interval) {
+		interval = setInterval(() => {
+			cells = currentAutomaton.createNextBoard(cells);
+			render(ctx, cells);
+		}, intervalTimeout);
+		btn.disabled = true;
+	}
+});
+
+stopBtn.addEventListener('click', (e) => {
+	// const btn = e.target as HTMLButtonElement;
+	if (interval) {
+		clearInterval(interval);
+		interval = undefined;
+		startBtn.disabled = false;
+	}
 });
 
 nextButton.addEventListener('click', () => {
@@ -144,7 +166,8 @@ let currentAutomaton: Automaton = BBAutomaton;
 
 (() => {
 	automatons.forEach((a) => {
-		const id = a.name.toLowerCase().replace(' ', '_');
+		const replaceRegex = /['"\., ]/g; // /g flag to match all
+		const id = a.name.toLowerCase().replace(replaceRegex, '_');
 		const automButton = document.createElement('input');
 		automButton.setAttribute('type', 'radio');
 		automButton.value = a.name;
