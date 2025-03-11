@@ -16,6 +16,10 @@ const canvas = document.getElementById(
 	'gameCanvas'
 ) as HTMLCanvasElement | null;
 if (!canvas) throw new Error('canvas not found');
+
+const clearBtn = document.getElementById('clear-btn');
+if (!clearBtn) throw new Error('could not get clear button');
+
 const nextButton = document.getElementById(
 	'next-btn'
 ) as HTMLButtonElement | null;
@@ -41,19 +45,25 @@ canvas.addEventListener('contextmenu', (e) => {
 	e.preventDefault();
 });
 
+clearBtn.addEventListener('click', () => {
+	boardReset(board);
+	ctxReset(ctx);
+	if (interval) stopBtn.click();
+});
+
 startBtn.addEventListener('click', (e) => {
 	const btn = e.target as HTMLButtonElement;
 	if (!interval) {
 		interval = setInterval(() => {
-			cells = currentAutomaton.createNextBoard(cells);
-			render(ctx, cells);
+			if (!currentAutomaton.createNextBoard(board, nextBoard))
+				stopBtn.click();
+			render(ctx, board);
 		}, intervalTimeout);
 		btn.disabled = true;
 	}
 });
 
-stopBtn.addEventListener('click', (e) => {
-	// const btn = e.target as HTMLButtonElement;
+stopBtn.addEventListener('click', () => {
 	if (interval) {
 		clearInterval(interval);
 		interval = undefined;
@@ -62,9 +72,9 @@ stopBtn.addEventListener('click', (e) => {
 });
 
 nextButton.addEventListener('click', () => {
-	cells = currentAutomaton.createNextBoard(cells);
+	currentAutomaton.createNextBoard(board, nextBoard);
 
-	render(ctx, cells);
+	render(ctx, board);
 });
 
 canvas.width = WIDTH;
@@ -72,9 +82,9 @@ canvas.height = HEIGHT;
 canvas.addEventListener('click', (e) => {
 	const c = Math.floor(e.offsetX / SQUARE_WIDTH);
 	const r = Math.floor(e.offsetY / SQUARE_HEIGHT);
-	cells[r][c] = toggleCellState(cells[r][c]);
+	board[r][c] = toggleCellState(board[r][c]);
 
-	render(ctx, cells);
+	render(ctx, board);
 	// colorRect(ctx, x, y, ALIVE_COLOR);
 });
 
@@ -82,33 +92,35 @@ function createAutomaton<T extends string>(
 	name: string,
 	states: StateObj<T>[]
 ): Automaton {
-	function createNextBoard(board: Board): Board {
-		const nextBoard = createNewBoard();
-		board.forEach((row, i) => {
+	function createNextBoard(b: Board, nb: Board): boolean {
+		let hasChanged = false;
+		b.forEach((row, i) => {
 			row.forEach((cell, j) => {
-				const neighs = countNeighbors<T>(board, j, i, states);
+				const neighs = countNeighbors<T>(b, j, i, states);
 				const state = states[cell];
 				if (Object.keys(state.rules).length === 0)
-					nextBoard[i][j] = state.default;
+					nb[i][j] = state.default;
 				for (const n in neighs) {
 					// Check if rule type in rules
 					const rule = state.rules[n];
-					console.log(rule);
 					if (rule) {
 						if (rule.includes(neighs[n])) {
 							const ind = states.findIndex(
 								(state) => state.state === n
 							);
 							if (ind !== -1) {
-								nextBoard[i][j] = states[ind].value;
+								nb[i][j] = states[ind].value;
 							}
-						} else nextBoard[i][j] = state.default;
+						} else {
+							nb[i][j] = state.default;
+						}
 					}
 				}
+				if (nb[i][j] !== cell) hasChanged = true;
 			});
 		});
-
-		return nextBoard;
+		[board, nextBoard] = [nextBoard, board];
+		return hasChanged;
 	}
 
 	return { name, states, createNextBoard };
@@ -181,8 +193,9 @@ let currentAutomaton: Automaton = BBAutomaton;
 			if (btn.checked) {
 				currentAutomaton = a;
 				ctxReset(ctx);
-				boardReset();
+				boardReset(board);
 			}
+			if (interval) stopBtn.click();
 		});
 
 		const automLabel = document.createElement('label');
@@ -200,7 +213,8 @@ function createNewBoard(): Board {
 		.map(() => Array(COLS).fill(0));
 }
 
-let cells: Board = createNewBoard();
+let board: Board = createNewBoard();
+let nextBoard: Board = createNewBoard();
 
 function toggleCellState(cell: Cell): Cell {
 	const ind = currentAutomaton.states.findIndex(
@@ -252,8 +266,10 @@ function ctxReset(ctx: CanvasRenderingContext2D) {
 	ctx.fillRect(0, 0, WIDTH, HEIGHT);
 }
 
-function boardReset() {
-	cells = createNewBoard();
+function boardReset(board: Board) {
+	board.forEach((row, y) => {
+		row.forEach((_, x) => (board[y][x] = 0));
+	});
 }
 
 function render(ctx: CanvasRenderingContext2D, board: Board) {
@@ -272,4 +288,4 @@ function render(ctx: CanvasRenderingContext2D, board: Board) {
 	});
 }
 
-render(ctx, cells);
+render(ctx, board);
