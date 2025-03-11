@@ -43,6 +43,11 @@ if (!automataPanel) throw new Error('could not get automata panel');
 
 canvas.addEventListener('contextmenu', (e) => {
 	e.preventDefault();
+	const c = Math.floor(e.offsetX / SQUARE_WIDTH);
+	const r = Math.floor(e.offsetY / SQUARE_HEIGHT);
+	board[r][c] = toggleCellState(board[r][c], -1);
+
+	render(ctx, board);
 });
 
 clearBtn.addEventListener('click', () => {
@@ -82,7 +87,7 @@ canvas.height = HEIGHT;
 canvas.addEventListener('click', (e) => {
 	const c = Math.floor(e.offsetX / SQUARE_WIDTH);
 	const r = Math.floor(e.offsetY / SQUARE_HEIGHT);
-	board[r][c] = toggleCellState(board[r][c]);
+	board[r][c] = toggleCellState(board[r][c], 1);
 
 	render(ctx, board);
 	// colorRect(ctx, x, y, ALIVE_COLOR);
@@ -216,11 +221,15 @@ function createNewBoard(): Board {
 let board: Board = createNewBoard();
 let nextBoard: Board = createNewBoard();
 
-function toggleCellState(cell: Cell): Cell {
+function mod(a: number, b: number): number {
+	return ((a % b) + b) % b;
+}
+
+function toggleCellState(cell: Cell, incr: number): Cell {
 	const ind = currentAutomaton.states.findIndex(
 		(state) => state.value === cell
 	);
-	return (ind + 1) % currentAutomaton.states.length;
+	return mod(ind + incr, currentAutomaton.states.length);
 }
 
 function countNeighbors<T extends string>(
